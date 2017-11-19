@@ -31,29 +31,39 @@ public class ProducerConsumer {
 			full = new Semaphore(0); 
 		}
 		
-		public synchronized void produce(int randInt) {
+		public void produce(int randInt) {
+			while (count == bufferSize) {};
+			
+			System.out.println("Buffer count: " + count);
 			try {
 				empty.acquire();
 				mutex.acquire();
 			}	 catch (InterruptedException e) {}
 		
-			count++;
+			++count;
 			buffer[bufferIn] = randInt;
-			bufferIn++;
+			System.out.println("Producer: " +randInt);
+			bufferIn = (bufferIn + 1)% bufferSize;
+			
+			
 			mutex.release();
 			full.release();
 		}
 		
-		public synchronized int consume() {
-			int bufferRead;
+		public int consume() {
+			
+			int bufferRead = 0;
+			while (count == 0) {};
+			
 			try {
 				full.acquire();
 				mutex.acquire();
 			}	 catch (InterruptedException e) {}
 			
-			count--;
+			--count;
 			bufferRead = buffer[bufferOut];
-			bufferOut++;
+			bufferOut = (bufferOut + 1)% bufferSize;
+			
 			mutex.release();
 			empty.release();	
 			
@@ -81,7 +91,6 @@ public class ProducerConsumer {
 				
 				rand = new Random();
 				int randInt = rand.nextInt(99999);
-				System.out.println("Producer "+randInt);
 				buffer.produce(randInt);
 			}
 		}
@@ -105,8 +114,8 @@ public class ProducerConsumer {
 					Thread.sleep(sleep);
 				} catch (InterruptedException e) {}
 				
-				System.out.println("consumer ready");
 				bufferInt = (int)buffer.consume();
+				System.out.println("Consumer: " + bufferInt);
 			}
 		}
     }
@@ -127,12 +136,12 @@ public class ProducerConsumer {
 		
 		for(int i=0; i < producerThreadCount; i++) {
 			producers[i] = new Thread(new Producer(buffer, sleep));
-			producers[i].run();
+			producers[i].start();
 		}
 		
 		for(int i = 0; i < consumerThreadCount; i++) {
 			consumers[i] = new Thread(new Consumer(buffer, sleep));
-			consumers[i].run();
+			consumers[i].start();
 		}	
 	}	
 			
