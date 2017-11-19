@@ -36,19 +36,19 @@ public class ProducerConsumer {
 		public void produce(int randInt) {
 			
 			try {
-				empty.acquire();
-				mutex.acquire();
+				empty.acquire(); //stops producer when buffer is full
+				mutex.acquire(); //locks critical section
 			}	 catch (InterruptedException e) {
 				System.out.println("error produce buffer");
 				System.exit(1);
 			}
-			while (bufferCount == bufferSize) {};  //when buffer is full wait
+			
 			++bufferCount;
 			buffer[bufferIn] = randInt;
 			System.out.println("Producer: " +randInt);
 			bufferIn = (bufferIn + 1)% bufferSize;			
-			mutex.release();
-			full.release();
+			mutex.release();	//signals access 
+			full.release(); 	//unlocks critical section	
 		}
 		
 		//consumer call in buffer
@@ -56,14 +56,13 @@ public class ProducerConsumer {
 			
 			int bufferRead = 0;			
 			try {
-				full.acquire();
-				mutex.acquire();
+				full.acquire(); //stops consumer when buffer is empty
+				mutex.acquire(); //gets access to critical
 			}	 catch (InterruptedException e) {
 				System.out.println("error consume buffer");
 				System.exit(1);
 			}
 			
-			while (bufferCount == 0) {};  //when buffer is empty wait
 			--bufferCount;
 			bufferRead = buffer[bufferOut];
 			bufferOut = (bufferOut + 1)% bufferSize;			
