@@ -75,21 +75,26 @@ public class ProducerConsumer {
 	public static class Producer implements Runnable {
 		
 		private Buffer buffer;
-		private int sleep;
+		private int randSleepTime;
+		private int randBufferInt;
 		
 		public Producer(Buffer buffer) {
 			this.buffer = buffer;	
 		}
 		
 		public void run() {
-			Random rand;
+			
+			Random r = new Random();
+			
+			for(int i = 0; i < 100; i++) {
+				randSleepTime = r.nextInt(500);
 				try {
-					Thread.sleep(sleep);
+					Thread.sleep(randSleepTime);
 				} catch (InterruptedException e) {}
 				
-				rand = new Random();
-				int randInt = rand.nextInt(99999);
-				buffer.produce(randInt);
+				randBufferInt = r.nextInt(99999);
+				buffer.produce(randBufferInt);
+			}
 		}		
 	}
 	
@@ -102,9 +107,11 @@ public class ProducerConsumer {
 		}
    
        public void run() {
+    	   
 			int bufferInt;
+			Random r = new Random();
+			
 			for(int i = 0; i < 100; i++) {
-				Random r;
 				int randSleepTime = r.nextInt(500);
 				try {
 						Thread.sleep(randSleepTime);
