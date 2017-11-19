@@ -1,6 +1,6 @@
 /*************************************************
- * Spencer Vaughn                            	 *
- * 010290651	  								 *
+ * Spencer Vaughn                                *
+ * 010290651                                     *
  * Producer-Consumer threads with Bounded Buffer *
  *************************************************/
 
@@ -14,16 +14,16 @@ public class ProducerConsumer {
 		
 		private final int bufferSize = 5;
 		private final int criticalSectionCount = 1;
-		private int count;
+		private int bufferCount;
 		private int bufferIn;
 		private int bufferOut;
-		private int[] buffer;
+		private int[] buffer = {};
 		private Semaphore mutex; 
 		private Semaphore full; 
 		private Semaphore empty; 
 		
 		public Buffer() {
-			count = 0;
+			bufferCount = 0;
 			bufferIn = 0;
 			bufferOut = 0;
 			buffer = new int[bufferSize];
@@ -34,15 +34,16 @@ public class ProducerConsumer {
 		
 		// Producer call in buffer
 		public void produce(int randInt) {
-			while (count == bufferSize) {};  //when buffer is full wait
 			
-			System.out.println("Buffer count: " + count);
 			try {
 				empty.acquire();
 				mutex.acquire();
-			}	 catch (InterruptedException e) {}
-		
-			++count;
+			}	 catch (InterruptedException e) {
+				System.out.println("error produce buffer");
+				System.exit(1);
+			}
+			while (bufferCount == bufferSize) {};  //when buffer is full wait
+			++bufferCount;
 			buffer[bufferIn] = randInt;
 			System.out.println("Producer: " +randInt);
 			bufferIn = (bufferIn + 1)% bufferSize;			
@@ -53,18 +54,19 @@ public class ProducerConsumer {
 		//consumer call in buffer
 		public int consume() {
 			
-			int bufferRead = 0;
-			while (count == 0) {};  //when buffer is empty wait
-			
+			int bufferRead = 0;			
 			try {
 				full.acquire();
 				mutex.acquire();
-			}	 catch (InterruptedException e) {}
+			}	 catch (InterruptedException e) {
+				System.out.println("error consume buffer");
+				System.exit(1);
+			}
 			
-			--count;
+			while (bufferCount == 0) {};  //when buffer is empty wait
+			--bufferCount;
 			bufferRead = buffer[bufferOut];
-			bufferOut = (bufferOut + 1)% bufferSize;
-			
+			bufferOut = (bufferOut + 1)% bufferSize;			
 			mutex.release();
 			empty.release();	
 			
@@ -74,8 +76,8 @@ public class ProducerConsumer {
 	}
 
 /***********************     Producer     *****************************
- * 	Fills buffer with random integers.								  *
- *	100 iterations with random sleep time between 0 and 0.5 seconds	  *
+ * 	Fills buffer with random integers.                                *
+ *	100 iterations with random sleep time between 0 and 0.5 seconds.  *
  **********************************************************************/
 
 	public static class Producer implements Runnable {
@@ -96,17 +98,21 @@ public class ProducerConsumer {
 				randSleepTime = r.nextInt(500);
 				try {
 					Thread.sleep(randSleepTime);
-				} catch (InterruptedException e) {}
+				} catch (InterruptedException e) {
+					System.out.println("error producer can't sleep");
+					System.exit(1);
+				}
 				
 				randBufferInt = r.nextInt(99999);
 				buffer.produce(randBufferInt);
+				
 			}
 		}		
 	}
 
 /************************     Consumer     **********************************
- *  Returns random integer stored in buffer by producer.					*
- *	100 iterations with random sleep time between 0 and 0.5 seconds.		*
+ *  Returns random integer stored in buffer by producer.                    *
+ *	100 iterations with random sleep time between 0 and 0.5 seconds.        *
  ****************************************************************************/
 
 	public static class Consumer implements Runnable {
@@ -122,13 +128,16 @@ public class ProducerConsumer {
 			int bufferInt;
 			Random r = new Random();
 			
-			for(int i = 0; i < 100; i++) {
+			for(int i = 0; i < 100; i++) {				
 				int randSleepTime = r.nextInt(500);
 				try {
 						Thread.sleep(randSleepTime);
-					} catch (InterruptedException e) {}
-					
-					bufferInt = (int)buffer.consume();
+					} catch (InterruptedException e) {
+						System.out.println("error producer can't sleep");
+						System.exit(1);
+					}					
+				
+				bufferInt = (int)buffer.consume();
 					System.out.println("Consumer: " + bufferInt);
 				}
 			}
@@ -161,10 +170,13 @@ public class ProducerConsumer {
 			consumers[i].start();
 		}	
 		
-		//Sleep for specified time while threads modify buffer
+		//Sleep (ms) for specified time while threads modify buffer
 		try {
 			Thread.sleep(sleep*1000);
-		} catch(InterruptedException e) {}
+		} catch(InterruptedException e) {
+			System.out.println("main thread can't sleep");
+			System.exit(1);
+		}
 		
 		//Exit after sleep
 		System.exit(0);
