@@ -77,14 +77,12 @@ public class ProducerConsumer {
 		private Buffer buffer;
 		private int sleep;
 		
-		public Producer(Buffer buffer, int sleep) {
-			this.buffer = buffer;
-			this.sleep = sleep;			
+		public Producer(Buffer buffer) {
+			this.buffer = buffer;	
 		}
 		
 		public void run() {
 			Random rand;
-			while(true) {
 				try {
 					Thread.sleep(sleep);
 				} catch (InterruptedException e) {}
@@ -92,33 +90,31 @@ public class ProducerConsumer {
 				rand = new Random();
 				int randInt = rand.nextInt(99999);
 				buffer.produce(randInt);
-			}
-		}
-		
+		}		
 	}
 	
 	public static class Consumer implements Runnable {
 		
 		private Buffer buffer;
-		private int sleep;
        
-		public Consumer(Buffer buffer, int sleep) { 
+		public Consumer(Buffer buffer) { 
 			this.buffer = buffer;
-			this.sleep = sleep;
 		}
    
        public void run() {
 			int bufferInt;
-			while(true){
+			for(int i = 0; i < 100; i++) {
+				Random r;
+				int randSleepTime = r.nextInt(500);
 				try {
-					Thread.sleep(sleep);
-				} catch (InterruptedException e) {}
-				
-				bufferInt = (int)buffer.consume();
-				System.out.println("Consumer: " + bufferInt);
+						Thread.sleep(randSleepTime);
+					} catch (InterruptedException e) {}
+					
+					bufferInt = (int)buffer.consume();
+					System.out.println("Consumer: " + bufferInt);
+				}
 			}
-		}
-    }
+    	}
 	
 	
 	public static void main(String args[]) throws InterruptedException {
@@ -135,14 +131,18 @@ public class ProducerConsumer {
 		Thread consumers[] = new Thread[consumerThreadCount];
 		
 		for(int i=0; i < producerThreadCount; i++) {
-			producers[i] = new Thread(new Producer(buffer, sleep));
+			producers[i] = new Thread(new Producer(buffer));
 			producers[i].start();
 		}
 		
 		for(int i = 0; i < consumerThreadCount; i++) {
-			consumers[i] = new Thread(new Consumer(buffer, sleep));
+			consumers[i] = new Thread(new Consumer(buffer));
 			consumers[i].start();
 		}	
+		
+		try {
+			Thread.sleep(sleep*1000);
+		} catch(InterruptedException e) {}
 	}	
 			
 }
