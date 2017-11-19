@@ -9,10 +9,6 @@ import java.util.Random;
 
 public class ProducerConsumer { 
 	
-	private static Producer producers[];
-	private static Consumer consumers[];
-
-
 	public static class Buffer{
 		
 		private final int bufferSize = 5;
@@ -97,7 +93,7 @@ public class ProducerConsumer {
 		private Buffer buffer;
 		private int sleep;
        
-		public Consumer(Buffer buffer, int sleep) { 
+		public Consumer(Buffer buffer, int sleep, int consumerThreadCount) { 
 			this.buffer = buffer;
 			this.sleep = sleep;
 		}
@@ -123,21 +119,21 @@ public class ProducerConsumer {
 		int producerThreadCount = Integer.parseInt(args[1]);
 		int consumerThreadCount = Integer.parseInt(args[2]);
 		
-		//Create Bounded buffer
+		//Create buffer
 		Buffer buffer = new Buffer();
 		
-		Thread producers;
-		Thread consumers;
+		Thread producers[] = new Thread[producerThreadCount];
+		Thread consumers[] = new Thread[consumerThreadCount];
 		
-		//for(int i=0; i < producerThreadCount; i++) {
-			producers = new Thread(new Producer(buffer, sleep, producerThreadCount));
-			producers.run();
-		//}
+		for(int i=0; i < producerThreadCount; i++) {
+			producers[i] = new Thread(new Producer(buffer, sleep, producerThreadCount));
+			producers[i].run();
+		}
 		
-		//for(int i = 0; i < consumerThreadCount; i++) {
-			consumers = new Thread(new Consumer(buffer, sleep));
-			consumers.run();
-		//}	
+		for(int i = 0; i < consumerThreadCount; i++) {
+			consumers[i] = new Thread(new Consumer(buffer, sleep, consumerThreadCount));
+			consumers[i].run();
+		}	
 	}	
 			
 }
