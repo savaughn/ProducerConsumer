@@ -23,7 +23,7 @@ public class ProducerConsumer {
 		private Semaphore empty; 
 		
 		public Buffer() {
-			bufferCount = 0;
+			setBufferCount(0);
 			bufferIn = 0;
 			bufferOut = 0;
 			buffer = new int[bufferSize];
@@ -43,7 +43,7 @@ public class ProducerConsumer {
 				System.exit(1);
 			}
 			
-			++bufferCount;
+			setBufferCount(getBufferCount() + 1);
 			buffer[bufferIn] = randInt;
 			System.out.println("Producer produced " +randInt);
 			bufferIn = (bufferIn + 1)% bufferSize;			
@@ -63,13 +63,21 @@ public class ProducerConsumer {
 				System.exit(1);
 			}
 			
-			--bufferCount;
+			setBufferCount(getBufferCount() - 1);
 			bufferRead = buffer[bufferOut];
 			bufferOut = (bufferOut + 1)% bufferSize;			
 			mutex.release();  //unlocks critical section
 			empty.release();  //signals producer
 			
 			return bufferRead;
+		}
+
+		public int getBufferCount() {
+			return bufferCount;
+		}
+
+		public void setBufferCount(int bufferCount) {
+			this.bufferCount = bufferCount;
 		}
 			
 	}
@@ -102,7 +110,7 @@ public class ProducerConsumer {
 					System.exit(1);
 				}
 				
-				randBufferInt = r.nextInt(99999);
+				randBufferInt = r.nextInt(89999)+10000;
 				buffer.produce(randBufferInt);
 				
 			}
@@ -137,15 +145,19 @@ public class ProducerConsumer {
 					}					
 				
 				bufferInt = (int)buffer.consume();
-					System.out.println("Consumer consumed " + bufferInt);
+				System.out.println("Consumer consumed " + bufferInt);
 				}
 			}
     	}
 	
 	
 	public static void main(String args[]) throws InterruptedException {
+				
+		if(args.length != 3 ) {
+			System.out.println("'Check arguments' usage:ProducerConsumer <sleep> <producer thread count> <consumer thread count>");
+			System.exit(1);
+		}
 		
-		//parse arguments
 		int sleep = Integer.parseInt(args[0]);
 		int producerThreadCount = Integer.parseInt(args[1]);
 		int consumerThreadCount = Integer.parseInt(args[2]);
