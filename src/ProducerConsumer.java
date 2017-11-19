@@ -45,10 +45,10 @@ public class ProducerConsumer {
 			
 			++bufferCount;
 			buffer[bufferIn] = randInt;
-			System.out.println("Producer: " +randInt);
+			System.out.println("Producer produced " +randInt);
 			bufferIn = (bufferIn + 1)% bufferSize;			
-			mutex.release();	//signals access 
-			full.release(); 	//unlocks critical section	
+			mutex.release();	//unlocks critical section 
+			full.release(); 	//signals consumer 
 		}
 		
 		//consumer call in buffer
@@ -66,8 +66,8 @@ public class ProducerConsumer {
 			--bufferCount;
 			bufferRead = buffer[bufferOut];
 			bufferOut = (bufferOut + 1)% bufferSize;			
-			mutex.release();
-			empty.release();	
+			mutex.release();  //unlocks critical section
+			empty.release();  //signals producer
 			
 			return bufferRead;
 		}
@@ -137,7 +137,7 @@ public class ProducerConsumer {
 					}					
 				
 				bufferInt = (int)buffer.consume();
-					System.out.println("Consumer: " + bufferInt);
+					System.out.println("Consumer consumed " + bufferInt);
 				}
 			}
     	}
