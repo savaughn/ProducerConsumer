@@ -67,7 +67,7 @@ public class ProducerConsumer {
 		private Buffer buffer;
 		private int sleep;
 		
-		public Producer(Buffer buffer, int sleep, int producerThreadCount) {
+		public Producer(Buffer buffer, int sleep) {
 			this.buffer = buffer;
 			this.sleep = sleep;			
 		}
@@ -93,7 +93,7 @@ public class ProducerConsumer {
 		private Buffer buffer;
 		private int sleep;
        
-		public Consumer(Buffer buffer, int sleep, int consumerThreadCount) { 
+		public Consumer(Buffer buffer, int sleep) { 
 			this.buffer = buffer;
 			this.sleep = sleep;
 		}
@@ -126,12 +126,12 @@ public class ProducerConsumer {
 		Thread consumers[] = new Thread[consumerThreadCount];
 		
 		for(int i=0; i < producerThreadCount; i++) {
-			producers[i] = new Thread(new Producer(buffer, sleep, producerThreadCount));
+			producers[i] = new Thread(new Producer(buffer, sleep));
 			producers[i].run();
 		}
 		
 		for(int i = 0; i < consumerThreadCount; i++) {
-			consumers[i] = new Thread(new Consumer(buffer, sleep, consumerThreadCount));
+			consumers[i] = new Thread(new Consumer(buffer, sleep));
 			consumers[i].run();
 		}	
 	}	
