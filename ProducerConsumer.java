@@ -14,9 +14,11 @@ public class ProducerConsumer {
 		
 		private final int bufferSize = 5;
 		private final int criticalSectionCount = 1;
+		
 		private int bufferCount;
 		private int bufferIn;
 		private int bufferOut;
+		
 		private int[] buffer = {};
 		private Semaphore mutex; 
 		private Semaphore full; 
@@ -26,10 +28,10 @@ public class ProducerConsumer {
 			setBufferCount(0);
 			bufferIn = 0;
 			bufferOut = 0;
-			buffer = new int[bufferSize];
-			mutex = new Semaphore(criticalSectionCount); 
-			empty = new Semaphore(bufferSize);
-			full = new Semaphore(0); 
+			buffer = new int[bufferSize];					// Buffer size is 5
+			mutex = new Semaphore(criticalSectionCount);    // Mutex gets 1 permit
+			empty = new Semaphore(bufferSize);				// Empty gets 5 permits
+			full = new Semaphore(0); 						// Fulls gets 0 permits
 		}
 		
 		// Producer call in buffer
