@@ -13,30 +13,28 @@ public class ProducerConsumer {
 	public static class Buffer{
 		
 		private final int bufferSize = 5;
-		private final int criticalSectionCount = 1;
+		private final int criticalSectionCount = 1;	
 		
-		private int bufferCount;
 		private int bufferIn;
-		private int bufferOut;
-		
+		private int bufferOut;		
 		private int[] buffer = {};
+		
 		private Semaphore mutex; 
 		private Semaphore full; 
 		private Semaphore empty; 
 		
 		public Buffer() {
-			setBufferCount(0);
+			
 			bufferIn = 0;
 			bufferOut = 0;
 			buffer = new int[bufferSize];					// Buffer size is 5
 			mutex = new Semaphore(criticalSectionCount);    // Mutex gets 1 permit
 			empty = new Semaphore(bufferSize);				// Empty gets 5 permits
-			full = new Semaphore(0); 						// Fulls gets 0 permits
+			full = new Semaphore(0); 						// Full gets 0 permits
 		}
 		
 		// Producer call in buffer
-		public void produce(int randInt) {
-			
+		public void produce(int randInt) {			
 			try {
 				empty.acquire(); //stops producer when buffer is full 
 				mutex.acquire(); //locks critical section
@@ -44,8 +42,6 @@ public class ProducerConsumer {
 				System.out.println("error produce buffer");
 				System.exit(1);
 			}
-			
-			setBufferCount(getBufferCount() + 1);
 			buffer[bufferIn] = randInt;
 			System.out.println("Producer produced " +randInt);
 			bufferIn = (bufferIn + 1)% bufferSize;			
@@ -54,8 +50,7 @@ public class ProducerConsumer {
 		}
 		
 		//consumer call in buffer
-		public int consume() {
-			
+		public int consume() {			
 			int bufferRead = 0;			
 			try {
 				full.acquire(); //stops consumer when buffer is empty
@@ -64,24 +59,13 @@ public class ProducerConsumer {
 				System.out.println("error consume buffer");
 				System.exit(1);
 			}
-			
-			setBufferCount(getBufferCount() - 1);
 			bufferRead = buffer[bufferOut];
-			bufferOut = (bufferOut + 1)% bufferSize;			
+			bufferOut = (bufferOut + 1)% bufferSize;	//resets to 0 when at the end		
 			mutex.release();  //unlocks critical section
 			empty.release();  //signals producer
 			
 			return bufferRead;
 		}
-
-		public int getBufferCount() {
-			return bufferCount;
-		}
-
-		public void setBufferCount(int bufferCount) {
-			this.bufferCount = bufferCount;
-		}
-			
 	}
 
 /***********************     Producer     *****************************
@@ -92,29 +76,21 @@ public class ProducerConsumer {
 	public static class Producer implements Runnable {
 		
 		private Buffer buffer;
-		private int randSleepTime;
-		private int randBufferInt;
 		
 		public Producer(Buffer buffer) {
 			this.buffer = buffer;	
 		}
 		
-		public void run() {
-			
-			Random r = new Random();
-			
+		public void run() {			
+			Random r = new Random();			
 			for(int i = 0; i < 100; i++) {
-				randSleepTime = r.nextInt(500);
 				try {
-					Thread.sleep(randSleepTime);
+					Thread.sleep(r.nextInt(500));
 				} catch (InterruptedException e) {
 					System.out.println("error producer can't sleep");
 					System.exit(1);
-				}
-				
-				randBufferInt = r.nextInt(89999)+10000;
-				buffer.produce(randBufferInt);
-				
+				}				
+				buffer.produce(r.nextInt(89999)+10000);
 			}
 		}		
 	}
@@ -132,22 +108,16 @@ public class ProducerConsumer {
 			this.buffer = buffer;
 		}
    
-       public void run() {
-    	   
-			int bufferInt;
-			Random r = new Random();
-			
-			for(int i = 0; i < 100; i++) {				
-				int randSleepTime = r.nextInt(500);
+       public void run() {    	   
+			Random r = new Random();			
+			for(int i = 0; i < 100; i++) {
 				try {
-						Thread.sleep(randSleepTime);
+						Thread.sleep(r.nextInt(500));
 					} catch (InterruptedException e) {
 						System.out.println("error producer can't sleep");
 						System.exit(1);
 					}					
-				
-				bufferInt = (int)buffer.consume();
-				System.out.println("Consumer consumed " + bufferInt);
+				System.out.println("Consumer consumed " + (int)buffer.consume());
 				}
 			}
     	}
@@ -190,10 +160,7 @@ public class ProducerConsumer {
 			System.out.println("main thread can't sleep");
 			System.exit(1);
 		}
-		
 		//Exit after sleep
-		System.exit(0);
-		
-	}	
-			
+		System.exit(0);		
+	}				
 }
